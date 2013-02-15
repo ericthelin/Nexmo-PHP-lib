@@ -1,16 +1,18 @@
 <?php
+Namespace Nexmo;
 
 /**
- * Class NexmoReceipt handles and incoming message receipts sent by Nexmo
+ * Class Receipt handles and incoming message receipts sent by Nexmo
  * 
- * Usage: $var = new NexmoReceipt ();
+ * Usage: $var = new Nexmo\Receipt ();
  * Methods:
  *     exists ( )
  *     
  *
  */
 
-class NexmoReceipt {
+class Receipt
+{
 
 	const STATUS_DELIVERED = 'DELIVERED';
 	const STATUS_EXPIRED = 'EXPIRED';
@@ -26,8 +28,11 @@ class NexmoReceipt {
 
 	public $found = false;
 
-	public function __construct ($data = false) {
-		if (!$data) $data = $_GET;
+	public function __construct($data = false)
+    {
+		if (!$data) {
+            $data = $_GET;
+        }
 
 		if (!isset($data['msisdn'], $data['network-code'], $data['messageId'])) {
 			return;
@@ -52,7 +57,8 @@ class NexmoReceipt {
 	/**
 	 * Returns true if a valid receipt is found
 	 */
-	public function exists () {
+	public function exists()
+    {
 		return $this->found;
 	}
 }
