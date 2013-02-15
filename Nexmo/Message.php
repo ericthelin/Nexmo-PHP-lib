@@ -9,7 +9,7 @@ Namespace Nexmo;
  *     sendText($to, $from, $message, $unicode = null)
  *     sendBinary($to, $from, $body, $udh)
  *     pushWap($to, $from, $title, $url, $validity = 172800000)
- *     displayOverview($nexmo_response=null)
+ *     displayOverview($nexmoResponse=null)
  *     
  *     inboundText($data=null)
  *     reply($text)
@@ -21,8 +21,8 @@ class Message
 {
 
     // Nexmo account credentials
-    private $nx_key = '';
-    private $nx_secret = '';
+    private $nxKey = '';
+    private $nxSecret = '';
 
     /**
      * @var string Nexmo server URI
@@ -32,19 +32,19 @@ class Message
      * This will also keep any debugging to a minimum due to
      * not worrying about which parser is being used.
      */
-    var $nx_uri = 'https://rest.nexmo.com/sms/json';
+    public $nxUri = 'https://rest.nexmo.com/sms/json';
 
     
     /**
      * @var array The most recent parsed Nexmo response.
      */
-    private $nexmo_response = '';
+    private $nexmoResponse = '';
     
 
     /**
      * @var bool If recieved an inbound message
      */
-    var $inbound_message = false;
+    public $inbound_message = false;
 
 
     // Current message
@@ -58,10 +58,10 @@ class Message
     public $ssl_verify = false; // Verify Nexmo SSL before sending any message
 
 
-    function NexmoMessage($api_key, $api_secret)
+    public function __construct($apiKey, $apiSecret)
     {
-        $this->nx_key = $api_key;
-        $this->nx_secret = $api_secret;
+        $this->nxKey = $apiKey;
+        $this->nxSecret = $apiSecret;
     }
 
 
@@ -73,7 +73,7 @@ class Message
      * message type. Otherwise set to TRUE if you require
      * unicode characters.
      */
-    function sendText($to, $from, $message, $unicode=null)
+    public function sendText($to, $from, $message, $unicode = null)
     {
     
         // Making sure strings are UTF-8 encoded
@@ -107,7 +107,7 @@ class Message
             'text' => $message,
             'type' => $containsUnicode ? 'unicode' : 'text'
         );
-        return $this->sendRequest ($post);
+        return $this->sendRequest($post);
         
     }
     
@@ -115,7 +115,7 @@ class Message
     /**
      * Prepare new WAP message.
      */
-    function sendBinary($to, $from, $body, $udh)
+    public function sendBinary($to, $from, $body, $udh)
     {
     
         //Binary messages must be hex encoded
@@ -133,7 +133,7 @@ class Message
             'body' => $body,
             'udh' => $udh
         );
-        return $this->sendRequest ($post);
+        return $this->sendRequest($post);
         
     }
     
@@ -141,7 +141,7 @@ class Message
     /**
      * Prepare new binary message.
      */
-    function pushWap($to, $from, $title, $url, $validity = 172800000)
+    public function pushWap($to, $from, $title, $url, $validity = 172800000)
     {
         // Making sure $title and $url are UTF-8 encoded
         if (!mb_check_encoding($title, 'UTF-8') || !mb_check_encoding($url, 'UTF-8')) {
@@ -172,7 +172,7 @@ class Message
     private function sendRequest($data)
     {
         // Build the post data
-        $data = array_merge($data, array('username' => $this->nx_key, 'password' => $this->nx_secret));
+        $data = array_merge($data, array('username' => $this->nxKey, 'password' => $this->nxSecret));
         $post = '';
         foreach ($data as $k => $v) {
             $post .= "&$k=$v";
@@ -181,7 +181,7 @@ class Message
         // If available, use CURL
         if (function_exists('curl_version')) {
 
-            $to_nexmo = curl_init($this->nx_uri);
+            $to_nexmo = curl_init($this->nxUri);
             curl_setopt($to_nexmo, CURLOPT_POST, true);
             curl_setopt($to_nexmo, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($to_nexmo, CURLOPT_POSTFIELDS, $post);
@@ -191,7 +191,7 @@ class Message
             }
 
             $from_nexmo = curl_exec($to_nexmo);
-            curl_close ($to_nexmo);
+            curl_close($to_nexmo);
 
         } elseif (ini_get('allow_url_fopen')) {
             // No CURL available so try the awesome file_get_contents
@@ -204,7 +204,7 @@ class Message
                 )
             );
             $context = stream_context_create($opts);
-            $from_nexmo = file_get_contents($this->nx_uri, false, $context);
+            $from_nexmo = file_get_contents($this->nxUri, false, $context);
 
         } else {
             // No way of sending a HTTP post :(
@@ -261,7 +261,7 @@ class Message
         $response_obj = $this->normaliseKeys($response);
 
         if ($response_obj) {
-            $this->nexmo_response = $response_obj;
+            $this->nexmoResponse = $response_obj;
 
             // Find the total cost of this message
             $response_obj->cost = $total_cost = 0;
@@ -277,7 +277,7 @@ class Message
 
         } else {
             // A malformed response
-            $this->nexmo_response = array();
+            $this->nexmoResponse = array();
             return false;
         }
         
@@ -319,11 +319,11 @@ class Message
      * Display a brief overview of a sent message.
      * Useful for debugging and quick-start purposes.
      */
-    public function displayOverview($nexmo_response=null)
+    public function displayOverview($nexmoResponse = null)
     {
-        $info = (!$nexmo_response) ? $this->nexmo_response : $nexmo_response;
+        $info = (!$nexmoResponse) ? $this->nexmoResponse : $nexmoResponse;
 
-        if (!$nexmo_response) {
+        if (!$nexmoResponse) {
             return 'Cannot display an overview of this response';
         }
 
@@ -403,7 +403,7 @@ class Message
      * This will set the current message to the inbound
      * message allowing for a future reply() call.
      */
-    public function inboundText($data=null)
+    public function inboundText($data = null)
     {
         if (!$data) {
             $data = $_GET;
@@ -439,5 +439,4 @@ class Message
 
         return $this->sendText($this->from, $this->to, $message);
     }
-
 }

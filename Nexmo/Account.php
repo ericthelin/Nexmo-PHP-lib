@@ -26,7 +26,10 @@ class Account
         'get_balance' => array('method' => 'GET', 'url' => '/account/get-balance/{k}/{s}'),
         'get_pricing' => array('method' => 'GET', 'url' => '/account/get-pricing/outbound/{k}/{s}/{country_code}'),
         'get_own_numbers' => array('method' => 'GET', 'url' => '/account/numbers/{k}/{s}'),
-        'search_numbers' => array('method' => 'GET', 'url' => '/number/search/{k}/{s}/{country_code}?pattern={pattern}'),
+        'search_numbers' => array(
+            'method' => 'GET',
+            'url' => '/number/search/{k}/{s}/{country_code}?pattern={pattern}'
+        ),
         'buy_number' => array('method' => 'POST', 'url' => '/number/buy/{k}/{s}/{country_code}/{msisdn}'),
         'cancel_number' => array('method' => 'POST', 'url' => '/number/cancel/{k}/{s}/{country_code}/{msisdn}')
     );
@@ -73,12 +76,15 @@ class Account
     {
         $country_code = strtoupper($country_code);
         
-        if (!isset($this->cache['country_codes']))
+        if (!isset($this->cache['country_codes'])) {
             $this->cache['country_codes'] = array();
+        }
         
         if (!isset($this->cache['country_codes'][$country_code])) {
             $tmp = $this->apiCall('get_pricing', array('country_code'=>$country_code));
-            if (!$tmp['data']) return false;
+            if (!$tmp['data']) {
+                return false;
+            }
             
             $this->cache['country_codes'][$country_code] = $tmp['data'];
         }
@@ -96,12 +102,15 @@ class Account
     {
         $country_code = strtoupper($country_code);
         
-        if (!isset($this->cache['country_codes']))
+        if (!isset($this->cache['country_codes'])) {
             $this->cache['country_codes'] = array();
+        }
         
         if (!isset($this->cache['country_codes'][$country_code])) {
             $tmp = $this->apiCall('get_pricing', array('country_code'=>$country_code));
-            if (!$tmp['data']) return false;
+            if (!$tmp['data']) {
+                return false;
+            }
             
             $this->cache['country_codes'][$country_code] = $tmp['data'];
         }
@@ -118,7 +127,9 @@ class Account
     {
         if (!isset($this->cache['own_numbers'])) {
             $tmp = $this->apiCall('get_own_numbers');
-            if (!$tmp['data']) return false;
+            if (!$tmp['data']) {
+                return false;
+            }
             
             $this->cache['own_numbers'] = $tmp['data'];
         }
@@ -142,7 +153,9 @@ class Account
         $country_code = strtoupper($country_code);
         
         $tmp = $this->apiCall('search_numbers', array('country_code'=>$country_code, 'pattern'=>$pattern));
-        if (!$tmp['data'] || !isset($tmp['data']['numbers'])) return false;
+        if (!$tmp['data'] || !isset($tmp['data']['numbers'])) {
+            return false;
+        }
         return $tmp['data']['numbers'];
     }
     
@@ -183,7 +196,7 @@ class Account
      * @param array $data
      * @return array|bool
      */
-    private function apiCall($command, $data=array())
+    private function apiCall($command, $data = array())
     {
         if (!isset($this->rest_commands[$command])) {
             return false;
@@ -192,11 +205,13 @@ class Account
         $cmd = $this->rest_commands[$command];
         
         $url = $cmd['url'];
-        $url = str_replace(array('{k}', '{s}') ,array($this->nx_key, $this->nx_secret), $url);
+        $url = str_replace(array('{k}', '{s}'), array($this->nx_key, $this->nx_secret), $url);
         
         $parsed_data = array();
-        foreach ($data as $k => $v) $parsed_data['{'.$k.'}'] = $v;
-        $url = str_replace(array_keys($parsed_data) ,array_values($parsed_data), $url);
+        foreach ($data as $k => $v) {
+            $parsed_data['{'.$k.'}'] = $v;
+        }
+        $url = str_replace(array_keys($parsed_data), array_values($parsed_data), $url);
         
         $url = trim($this->rest_base_url, '/') . $url;
         $post_data = '';
