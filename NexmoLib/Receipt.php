@@ -1,10 +1,10 @@
 <?php
-Namespace Nexmo;
+Namespace NexmoLib;
 
 /**
  * Class Receipt handles and incoming message receipts sent by Nexmo
  * 
- * Usage: $var = new Nexmo\Receipt ();
+ * Usage: $var = new NexmoLib\Receipt ();
  * Methods:
  *     exists ( )
  *     
@@ -22,9 +22,9 @@ class Receipt
     public $from = '';
     public $to = '';
     public $network = '';
-    public $message_id = '';
+    public $messageId = '';
     public $status = '';
-    public $received_time = 0;    // Format: UNIX timestamp
+    public $receivedTime = 0;    // Format: UNIX timestamp
 
     public $found = false;
 
@@ -45,12 +45,12 @@ class Receipt
         $this->to = $data['msisdn'];
         $this->from = $data['to'];
         $this->network = $data['network-code'];
-        $this->message_id = $data['messageId'];
+        $this->messageId = $data['messageId'];
         $this->status = strtoupper($data['status']);
 
         // Format the date into timestamp
         $dp = date_parse_from_format('ymdGi', $data['scts']);
-        $this->received_time = mktime($dp['hour'], $dp['minute'], $dp['second'], $dp['month'], $dp['day'], $dp['year']);
+        $this->receivedTime = mktime($dp['hour'], $dp['minute'], $dp['second'], $dp['month'], $dp['day'], $dp['year']);
     }
 
 

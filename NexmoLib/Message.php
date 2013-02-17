@@ -1,10 +1,10 @@
 <?php
-Namespace Nexmo;
+Namespace NexmoLib;
 
 /**
  * Class Message handles the methods and properties of sending an SMS message.
  * 
- * Usage: $var = new Nexo\Message($account_key, $account_password);
+ * Usage: $var = new NexmoLib\Message($accountKey, $accountPassword);
  * Methods:
  *     sendText($to, $from, $message, $unicode = null)
  *     sendBinary($to, $from, $body, $udh)
@@ -44,7 +44,7 @@ class Message
     /**
      * @var bool If recieved an inbound message
      */
-    public $inbound_message = false;
+    public $inboundMessage = false;
 
 
     // Current message
@@ -52,10 +52,10 @@ class Message
     public $from = '';
     public $text = '';
     public $network = '';
-    public $message_id = '';
+    public $messageId = '';
 
     // A few options
-    public $ssl_verify = false; // Verify Nexmo SSL before sending any message
+    public $sslVerify = false; // Verify Nexmo SSL before sending any message
 
 
     public function __construct($apiKey, $apiSecret)
@@ -181,17 +181,17 @@ class Message
         // If available, use CURL
         if (function_exists('curl_version')) {
 
-            $to_nexmo = curl_init($this->nxUri);
-            curl_setopt($to_nexmo, CURLOPT_POST, true);
-            curl_setopt($to_nexmo, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($to_nexmo, CURLOPT_POSTFIELDS, $post);
+            $toNexmo = curl_init($this->nxUri);
+            curl_setopt($toNexmo, CURLOPT_POST, true);
+            curl_setopt($toNexmo, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($toNexmo, CURLOPT_POSTFIELDS, $post);
 
             if (!$this->ssl_verify) {
-                curl_setopt($to_nexmo, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($toNexmo, CURLOPT_SSL_VERIFYPEER, false);
             }
 
-            $from_nexmo = curl_exec($to_nexmo);
-            curl_close($to_nexmo);
+            $fromNexmo = curl_exec($toNexmo);
+            curl_close($toNexmo);
 
         } elseif (ini_get('allow_url_fopen')) {
             // No CURL available so try the awesome file_get_contents
@@ -204,7 +204,7 @@ class Message
                 )
             );
             $context = stream_context_create($opts);
-            $from_nexmo = file_get_contents($this->nxUri, false, $context);
+            $fromNexmo = file_get_contents($this->nxUri, false, $context);
 
         } else {
             // No way of sending a HTTP post :(
@@ -212,7 +212,7 @@ class Message
         }
 
         
-        return $this->nexmoParse($from_nexmo);
+        return $this->nexmoParse($fromNexmo);
      
     }
     
@@ -224,11 +224,11 @@ class Message
     {
         // Determine is working with a class or araay
         if ($obj instanceof stdClass) {
-            $new_obj = new stdClass();
-            $is_obj = true;
+            $newObj = new stdClass();
+            $isObj = true;
         } else {
-            $new_obj = array();
-            $is_obj = false;
+            $newObj = array();
+            $isObj = false;
         }
 
 
@@ -239,41 +239,41 @@ class Message
             }
             
             // Replace any unwanted characters in they key name
-            if ($is_obj) {
-                $new_obj->{str_replace('-', '', $key)} = $val;
+            if ($isObj) {
+                $newObj->{str_replace('-', '', $key)} = $val;
             } else {
-                $new_obj[str_replace('-', '', $key)] = $val;
+                $newObj[str_replace('-', '', $key)] = $val;
             }
         }
 
-        return $new_obj;
+        return $newObj;
     }
 
 
     /**
      * Parse server response.
      */
-    private function nexmoParse($from_nexmo)
+    private function nexmoParse($fromNexmo)
     {
-        $response = json_decode($from_nexmo);
+        $response = json_decode($fromNexmo);
 
         // Copy the response data into an object, removing any '-' characters from the key
-        $response_obj = $this->normaliseKeys($response);
+        $responseObj = $this->normaliseKeys($response);
 
-        if ($response_obj) {
-            $this->nexmoResponse = $response_obj;
+        if ($responseObj) {
+            $this->nexmoResponse = $responseObj;
 
             // Find the total cost of this message
-            $response_obj->cost = $total_cost = 0;
-            if (is_array($response_obj->messages)) {
-                foreach ($response_obj->messages as $msg) {
-                    $total_cost = $total_cost + (float)$msg->messageprice;
+            $responseObj->cost = $totalCost = 0;
+            if (is_array($responseObj->messages)) {
+                foreach ($responseObj->messages as $msg) {
+                    $totalCost = $totalCost + (float)$msg->messageprice;
                 }
 
-                $response_obj->cost = $total_cost;
+                $responseObj->cost = $totalCost;
             }
 
-            return $response_obj;
+            return $responseObj;
 
         } else {
             // A malformed response
@@ -340,7 +340,7 @@ class Message
         if (!is_array($info->messages)) {
             $info->messages = array();
         }
-        $message_status = array();
+        $messageStatus = array();
         foreach ($info->messages as $message) {
             $tmp = array('id'=>'', 'status'=>0);
 
@@ -351,7 +351,7 @@ class Message
                 $tmp['id'] = $message->messageid;
             }
 
-            $message_status[] = $tmp;
+            $messageStatus[] = $tmp;
         }
         
         
@@ -360,7 +360,7 @@ class Message
             // HTML output
             $ret = '<table><tr><td colspan="2">'.$status.'</td></tr>';
             $ret .= '<tr><th>Status</th><th>Message ID</th></tr>';
-            foreach ($message_status as $mstat) {
+            foreach ($messageStatus as $mstat) {
                 $ret .= '<tr><td>'.$mstat['status'].'</td><td>'.$mstat['id'].'</td></tr>';
             }
             $ret .= '</table>';
@@ -371,21 +371,21 @@ class Message
             $ret = "$status:\n";
 
             // Get the sizes for the table
-            $out_sizes = array('id'=>strlen('Message ID'), 'status'=>strlen('Status'));
-            foreach ($message_status as $mstat) {
-                if ($out_sizes['id'] < strlen($mstat['id'])) {
-                    $out_sizes['id'] = strlen($mstat['id']);
+            $outSizes = array('id'=>strlen('Message ID'), 'status'=>strlen('Status'));
+            foreach ($messageStatus as $mstat) {
+                if ($outSizes['id'] < strlen($mstat['id'])) {
+                    $outSizes['id'] = strlen($mstat['id']);
                 }
-                if ($out_sizes['status'] < strlen($mstat['status'])) {
-                    $out_sizes['status'] = strlen($mstat['status']);
+                if ($outSizes['status'] < strlen($mstat['status'])) {
+                    $outSizes['status'] = strlen($mstat['status']);
                 }
             }
 
-            $ret .= '  '.str_pad('Status', $out_sizes['status'], ' ').'   ';
-            $ret .= str_pad('Message ID', $out_sizes['id'], ' ')."\n";
-            foreach ($message_status as $mstat) {
-                $ret .= '  '.str_pad($mstat['status'], $out_sizes['status'], ' ').'   ';
-                $ret .= str_pad($mstat['id'], $out_sizes['id'], ' ')."\n";
+            $ret .= '  '.str_pad('Status', $outSizes['status'], ' ').'   ';
+            $ret .= str_pad('Message ID', $outSizes['id'], ' ')."\n";
+            foreach ($messageStatus as $mstat) {
+                $ret .= '  '.str_pad($mstat['status'], $outSizes['status'], ' ').'   ';
+                $ret .= str_pad($mstat['id'], $outSizes['id'], ' ')."\n";
             }
         }
 
@@ -418,10 +418,10 @@ class Message
         $this->from = $data['msisdn'];
         $this->text = $data['text'];
         $this->network = (isset($data['network-code'])) ? $data['network-code'] : '';
-        $this->message_id = $data['messageId'];
+        $this->messageId = $data['messageId'];
 
         // Flag that we have an inbound message
-        $this->inbound_message = true;
+        $this->inboundMessage = true;
 
         return true;
     }
@@ -433,7 +433,7 @@ class Message
     public function reply($message)
     {
         // Make sure we actually have a text to reply to
-        if (!$this->inbound_message) {
+        if (!$this->inboundMessage) {
             return false;
         }
 
