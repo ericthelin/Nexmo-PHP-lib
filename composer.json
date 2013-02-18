@@ -3,7 +3,7 @@
     "type": "library",
     "homepage": "https://github.com/ericthelin/Nexmo-PHP-lib",
     "autoload": {
-        "psr-0": {"NexmoLib": "."}
+        "psr-0": {"NexmoLib": "./"}
     },
     "minimum-stability": "dev",
 }
