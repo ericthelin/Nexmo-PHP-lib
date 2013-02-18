@@ -1,0 +1,9 @@
+{
+    "name": "ericthelin/Nexmo-PHP-Lib",
+    "type": "library",
+    "homepage": "https://github.com/ericthelin/Nexmo-PHP-lib",
+    "autoload": {
+        "psr-0": {"NexmoLib": "."}
+    },
+    "minimum-stability": "dev",
+}
