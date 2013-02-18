@@ -5,5 +5,5 @@
     "autoload": {
         "psr-0": {"NexmoLib": "./"}
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "dev"
 }
